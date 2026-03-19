@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>HERE Political Views</title>
+    <link rel="preconnect" href="https://js.api.here.com">
+    
+    <!-- Import HERE SDK 3.2 Modules -->
+    <script type="text/javascript" src="https://js.api.here.com/v3/3.2/mapsjs-core.js" crossorigin="anonymous"></script>
+    <script type="text/javascript" src="https://js.api.here.com/v3/3.2/mapsjs-service.js" crossorigin="anonymous"></script>
+    <script type="text/javascript" src="https://js.api.here.com/v3/3.2/mapsjs-vectortile.js" crossorigin="anonymous"></script>
+    <script type="text/javascript" src="https://js.api.here.com/v3/3.2/mapsjs-mapevents.js" crossorigin="anonymous"></script>
+    <script type="text/javascript" src="https://js.api.here.com/v3/3.2/mapsjs-ui.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" type="text/css" href="https://js.api.here.com/v3/3.2/mapsjs-ui.css" crossorigin="anonymous" />
+    
+    <meta name="viewport" content="initial-scale=1.0, width=device-width" />
+    <style>
+        body, html { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; background-color: #222; }
+        #mapContainer { width: 100vw; height: 100vh; background-color: #222; }
+        
+        /* UI Control Panel Styles */
+        .control-panel {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px;
+            border-radius: 12px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            width: 280px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .control-panel h3 { margin-top: 0; font-size: 16px; color: #333; border-bottom: 1px solid #ddd; padding-bottom: 8px; }
+        .control-group { margin-bottom: 10px; }
+        .control-group label { display: block; font-size: 12px; color: #666; margin-bottom: 5px; }
+        select {
+            width: 100%;
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            font-size: 14px;
+            outline: none;
+        }
+        #loadingMsg { 
+            position: fixed; top: 20px; left: 20px; z-index: 1000;
+            background: rgba(255,255,255,0.9); padding: 12px; border-radius: 8px;
+            font-family: sans-serif; font-size: 13px; color: #333;
+        }
+        .info-text { font-size: 11px; color: #888; margin-top: 10px; line-height: 1.4; }
+    </style>
+</head>
+<body>
+    <div id="loadingMsg">Loading Map and Geopolitical Data...</div>
+    
+    <!-- Geopolitical View Switcher UI -->
+    <div class="control-panel">
+        <h3>Map Settings</h3>
+        <div class="control-group">
+            <label for="viewSelect">Select Geopolitical View</label>
+            <select id="viewSelect">
+                <option value="">Default (International)</option>
+                <option value="AB">Abkhazia (AB)</option>
+                <option value="AR">Argentina (AR)</option>
+                <option value="BR">Brazil (BR)</option>
+                <option value="CL">Chile (CL)</option>
+                <option value="CN">China (CN)</option>
+                <option value="CY">Cyprus (CY)</option>
+                <option value="EG">Egypt (EG)</option>
+                <option value="EH">Western Sahara (EH)</option>
+                <option value="GE">Georgia (GE)</option>
+                <option value="GF">French Guiana (GF)</option>
+                <option value="GR">Greece (GR)</option>
+                <option value="GY">Guyana (GY)</option>
+                <option value="HR">Croatia (HR)</option>
+                <option value="IL">Israel (IL)</option>
+                <option value="IN">India (IN)</option>
+                <option value="KE">Kenya (KE)</option>
+                <option value="MA">Morocco (MA)</option>
+                <option value="MW">Malawi (MW)</option>
+                <option value="NT">Neutral Zone (NT)</option>
+                <option value="OS">South Ossetia (OS)</option>
+                <option value="PK">Pakistan (PK)</option>
+                <option value="PS">Palestine (PS)</option>
+                <option value="RS">Serbia (RS)</option>
+                <option value="RU">Russia (RU)</option>
+                <option value="SD">Sudan (SD)</option>
+                <option value="SR">Suriname (SR)</option>
+                <option value="SS">South Sudan (SS)</option>
+                <option value="SY">Syria (SY)</option>
+                <option value="TR">Turkey (TR)</option>
+                <option value="TZ">Tanzania (TZ)</option>
+                <option value="US">United States (US)</option>
+                <option value="UY">Uruguay (UY)</option>
+                <option value="VN">Vietnam (VN)</option>
+                <option value="XK">Kosovo (XK)</option>
+            </select>
+        </div>
+        <div class="info-text">
+            Note: Selecting a specific geopolitical view adjusts boundaries and labels on the map according to that country's laws or perspective.
+        </div>
+    </div>
+
+    <div id="mapContainer"></div>
+
+    <script>
+        let map, vectorLayer, platform;
+
+        function startMap() {
+            const container = document.getElementById("mapContainer");
+            const loadingMsg = document.getElementById("loadingMsg");
+
+            // Check if SDK resources are loaded
+            if (typeof H === 'undefined' || !H.service || !H.service.Platform) {
+                setTimeout(startMap, 100);
+                return;
+            }
+
+            try {
+                // Initialize platform
+                platform = new H.service.Platform({
+                    'apikey': 'Gu-_7arBUNoEW8FMta6XI1LZry1W8IXdCzmeB7gxMog',
+                    'useHTTPS': true
+                });
+
+                // Force HARP engine and fix potential Mime Type errors
+                const defaultLayers = platform.createDefaultLayers({
+                    engineType: H.Map.EngineType.HARP 
+                });
+                
+                // Get vector layer
+                vectorLayer = defaultLayers.vector.normal.map;
+
+                // Initialize map (default center on India region)
+                map = new H.Map(
+                    container,
+                    vectorLayer,
+                    {
+                        zoom: 4,
+                        center: { lat: 23.6925, lng: 78.5798 },
+                        pixelRatio: Math.round(window.devicePixelRatio) || 1
+                    }
+                );
+
+                loadingMsg.style.display = 'none';
+
+                // Enable interactions
+                new H.mapevents.Behavior(new H.mapevents.MapEvents(map));
+                H.ui.UI.createDefault(map, defaultLayers);
+
+                // UI Event Listener
+                const viewSelect = document.getElementById('viewSelect');
+                viewSelect.addEventListener('change', function() {
+                    setMapPoliticalView(this.value);
+                });
+
+                console.log('HERE Map 3.2 Vector rendering initialized successfully.');
+
+            } catch (err) {
+                console.error('Map initialization failed:', err);
+                loadingMsg.innerHTML = `<span style="color:red">Initialization Error: ${err.message}</span>`;
+            }
+        }
+
+        /**
+         * Switch Geopolitical View
+         */
+        function setMapPoliticalView(viewCode) {
+            console.log(`[Geopolitical] Switching to: ${viewCode || 'Default'}`);
+            if (!vectorLayer) return;
+            
+            const provider = vectorLayer.getProvider();
+            if (provider && typeof provider.setPoliticalView === 'function') {
+                // Apply view code
+                provider.setPoliticalView(viewCode.toUpperCase());
+            } else {
+                console.warn('Current layer provider does not support setPoliticalView function');
+            }
+        }
+
+        // Handle Resize (Debounced)
+        let resizeTimeout;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                if (map) map.getViewPort().resize();
+            }, 250);
+        });
+
+        window.onload = startMap;
+    </script>
+</body>
+</html>
