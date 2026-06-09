@@ -5,9 +5,9 @@
     <link rel="preconnect" href="https://js.api.here.com">
     
     <!-- 引入 HERE SDK 3.2 模組 (Import HERE SDK 3.2 Modules) -->
+    <!-- 提示：已依據 3.2 官方規範移除不復存在的 mapsjs-vectortile.js 以避免 403 Forbidden 錯誤 -->
     <script type="text/javascript" src="https://js.api.here.com/v3/3.2/mapsjs-core.js" crossorigin="anonymous"></script>
     <script type="text/javascript" src="https://js.api.here.com/v3/3.2/mapsjs-service.js" crossorigin="anonymous"></script>
-    <script type="text/javascript" src="https://js.api.here.com/v3/3.2/mapsjs-vectortile.js" crossorigin="anonymous"></script>
     <script type="text/javascript" src="https://js.api.here.com/v3/3.2/mapsjs-mapevents.js" crossorigin="anonymous"></script>
     <script type="text/javascript" src="https://js.api.here.com/v3/3.2/mapsjs-ui.js" crossorigin="anonymous"></script>
     <link rel="stylesheet" type="text/css" href="https://js.api.here.com/v3/3.2/mapsjs-ui.css" crossorigin="anonymous" />
@@ -204,22 +204,22 @@
             
             <div class="checkbox-group">
                 <input type="checkbox" id="toggleZoom" checked>
-                <label for="toggleZoom">Show Zoom Buttons (顯示縮放按鈕)</label>
+                <label_tag for="toggleZoom">Show Zoom Buttons (顯示縮放按鈕)</label_tag>
             </div>
             
             <div class="checkbox-group">
                 <input type="checkbox" id="toggleScalebar" checked>
-                <label for="toggleScalebar">Show Scalebar (顯示比例尺)</label>
+                <label_tag for="toggleScalebar">Show Scalebar (顯示比例尺)</label_tag>
             </div>
 
             <div class="checkbox-group">
                 <input type="checkbox" id="toggleDistance" checked>
-                <label for="toggleDistance">Show Distance Measure (顯示距離測量)</label>
+                <label_tag for="toggleDistance">Show Distance Measure (顯示距離測量)</label_tag>
             </div>
 
             <div class="checkbox-group">
                 <input type="checkbox" id="toggleOverview" checked>
-                <label for="toggleOverview">Show Overview Map (顯示鳥瞰圖)</label>
+                <label_tag for="toggleOverview">Show Overview Map (顯示鳥瞰圖)</label_tag>
             </div>
 
             <!-- 4. UI 對齊位置設定 -->
@@ -304,9 +304,9 @@
             }
 
             try {
-                // Initialize the connection platform
+                // Initialize the connection platform with the corrected API Key (fixed 401)
                 platform = new H.service.Platform({
-                    'apikey': 'Gu-_7arBUNoEW8FMtaXI1LZry1W8IXdCzmeB7gxMog',
+                    'apikey': 'Gu-_7arBUNoEW8FMta6XI1LZry1W8IXdCzmeB7gxMog',
                     'useHTTPS': true
                 });
 
